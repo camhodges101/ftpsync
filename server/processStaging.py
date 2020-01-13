@@ -29,7 +29,7 @@ def updateServerManifest(filepath, filehash,lastmodtime):
 def updateTransferManifest(filehash):
     with open('/home/cameron/ftpsyncstorage/.client01Control/transferManifest.json','r') as infile:
         transferManifest=json.load(infile)
-    transferManifest['transfer'][filehash]['transferred']=True
+    transferManifest['transfer'][filehash]['Processed']=True
     with open('/home/cameron/ftpsyncstorage/.client01Control/transferManifest.json','w') as outfile:
         json.dump(transferManifest,outfile)
 
@@ -59,7 +59,7 @@ for idx, filehash in enumerate(transferManifest['transfer']):
     if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==False and gethash('.client01Staging/'+filehash)==filehash:
         paths=transferManifest['transfer'][filehash]['path']
         for path in paths:
-            print(path)
+
             confirmfolder(path.split('/')[:-1])
             su.copy('.client01Staging/'+filehash,correctserverpath(path))
             updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
