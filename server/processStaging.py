@@ -3,6 +3,18 @@ import shutil as su
 import hashlib
 import os
 
+def confirmtransfercomplete():
+    with open('/home/cameron/ftpsyncstorage/.client01Control/transferManifest.json','r') as infile:
+        transferManifest=json.load(infile)
+    transdict=transferManifest.copy()
+    for filehash in list(transferManifest['transfer']):
+        if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==True:
+            del transdict['transfer'][filehash]
+    with open('/home/cameron/ftpsyncstorage/.client01Control/transferManifest.json','w') as outfile:
+            json.dump(transdict,outfile)
+        
+
+
 def confirmfolder(targetdirectory):
 
     base=['storage']
@@ -52,17 +64,18 @@ def gethash(filename):
 os.chdir('/home/cameron/ftpsyncstorage/')
 
 with open('/home/cameron/ftpsyncstorage/.client01Control/transferManifest.json') as infile:
-	transferManifest=json.load(infile)
+    transferManifest=json.load(infile)
 #print(transferManifest)
 
 for idx, filehash in enumerate(transferManifest['transfer']):
     if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==False and gethash('.client01Staging/'+filehash)==filehash:
         paths=transferManifest['transfer'][filehash]['path']
+        print('{}-{}'.format(idx,filehash))
         for path in paths:
-
             confirmfolder(path.split('/')[:-1])
             su.copy('.client01Staging/'+filehash,correctserverpath(path))
-            updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
-            updateTransferManifest(filehash)
+        updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
+        updateTransferManifest(filehash)
         os.remove('.client01Staging/'+filehash)
 
+confirmtransfercomplete()
