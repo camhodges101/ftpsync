@@ -9,7 +9,7 @@ Created on Sun Jan  5 20:04:25 2020
 import npyscreen
 from datetime import datetime
 import random
-
+import socket
 recentfilesdata=[['Filename','Last Modified Time', 'Size']]
 
 latestserverattempt="Connected"
@@ -18,7 +18,15 @@ transferMode='Idle'
 nbfilessent=54
 totalfiles=540
 
+def getmessage(): 
+    UDP_IP = "127.0.0.1"
+    UDP_PORT = 5025
 
+    sock = socket.socket(socket.AF_INET, # Internet
+                         socket.SOCK_DGRAM) # UDP
+    sock.bind((UDP_IP, UDP_PORT))
+    data, addr = sock.recvfrom(1024)
+    return data.decode('utf-8')
 
 
 class MyGrid(npyscreen.GridColTitles):
@@ -45,6 +53,16 @@ class statusForm(npyscreen.Form):
         #self.display()
 
 	def while_waiting(self):
+        data=getmessage()
+        if data.split(",")[0]=="0x10"
+            self.nbFilesTotransfer=data.split(",")[2]
+            self.totalNumberofFiles=data.split(",")[1]
+            self.transferMode=data.split(",")[3]
+            self.hostName=data.split(",")[4]
+            self.connectionstate=data.split(",")[5]
+       
+        
+        
 		self.time.value=str(datetime.now())[:-7]
 		self.filecount.value=(str(self.nbFilesTotransfer)+"/"+str(self.totalNumberofFiles))
 		self.mode.value=self.transferMode
