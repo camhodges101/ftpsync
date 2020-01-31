@@ -22,6 +22,13 @@ port=55
 sshkey='~/.ssh/testpi.key'
 serverUser='cameron'
 
+def senddata(msg):
+    UDP_IP = "127.0.0.1"
+    UDP_PORT = 5025
+    MESSAGE = bytes(msg,'utf-8')
+     
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+    sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
 def generateTransferManifest(clientManifest,serverManifest):
 
@@ -65,6 +72,17 @@ def sendack(filehash):
     sock.sendto(message, (UDP_IP, UDP_PORT))
 
 
+'''
+Message structure
+<MessageID> 0x10
+<Total Number of Files to Transfer> len(transferManifest)
+<Files Remaining>
+<Transfer Mode> transfermode
+<Host Name> serverHost
+<Connection State> lastserverattempt
+''' 
+    
+    
 def updateManifest():
     manifest={}
     listing=os.walk(sharedir)
@@ -94,8 +112,6 @@ def updateManifest():
         manifest[file]['hash']=gethash(sharedir+file)
         manifest[file]['modtime']=os.path.getmtime(sharedir+file)
 
-    #with open('syncManifest.json','w') as outfile:
-    #    json.dump(manifest,outfile)
     return manifest
 while True:
     try:    
@@ -105,12 +121,14 @@ while True:
     except:
         outdateManifest=updateManifest()
         print("No Connection")
-
+        #Send Disconnected Message to GUI
 #def sendnewfiles(outdateManifest):
 count=1
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
 with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key=sshkey,cnopts=cnopts) as sftp:
+    #Send Connected Message to GUI
+    #Send Transfer Mode Idle to GUI
     while not checkR2R():
         time.sleep(5)
     
@@ -120,10 +138,10 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
 
     print('sent manifest')
     transferManifest=generateTransferManifest(outdateManifest,serverManifest)
-    
-    
+    #Send transfer mode Transferring message to GUI
+    #Send Number of files to transfer to GUI len(transferManifest)
     for idx,filehash in enumerate(transferManifest['transfer']):
-        
+        #Send number of files transfered update to GUI idx
         print(filehash)
         filename=transferManifest['transfer'][filehash]['path'][0]
 
