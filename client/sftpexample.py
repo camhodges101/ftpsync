@@ -43,8 +43,6 @@ def generateTransferManifest(clientManifest,serverManifest):
         json.dump(transfermanifest,outfile)
     
     return transfermanifest
-
-
 def getServerManifest():
     with sftp.open("/home/cameron/ftpsync/serverManifest.json") as infile:
         serverManifest = json.load(infile)
@@ -52,11 +50,8 @@ def getServerManifest():
 def checkR2R():
     flagFile=sftp.open("/home/cameron/ftpsync/.client01Control/readyReceive", "r")
     return int(flagFile.read())==1
-
-
 def sendfile(localpath,remotepath):
     sftp.put(localpath,remotepath)
-
 def sendCompletebit(value):
     text_file = sftp.open("/home/cameron/ftpsync/.client01Control/sendComplete", "w")
     n = text_file.write(str(value))
@@ -75,8 +70,8 @@ def updateManifest():
     listing=os.walk(sharedir)
     for items in listing:
         parent_directory, subdirectory, files=items[0],items[1],items[2]
-        subdir=len(subdirectory)>0
-        #subdir=False
+        
+        
         for file in files:
             filepath=parent_directory+'/'+file
             manifest[filepath[len(sharedir):]]={'hash':'','modtime':0,'flags':[0,0,0],'repeat':False}
@@ -120,32 +115,24 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
         time.sleep(5)
     
     serverManifest=getServerManifest()
-    
 
-    
     sendCompletebit(0) 
 
     print('sent manifest')
     transferManifest=generateTransferManifest(outdateManifest,serverManifest)
-    #print(transferManifest)
     
     
     for idx,filehash in enumerate(transferManifest['transfer']):
         
         print(filehash)
         filename=transferManifest['transfer'][filehash]['path'][0]
-        #filehash=outdateManifest[file]['hash']
-        
-            
-        
+
         if transferManifest['transfer'][filehash]['transferred']==False:
             
             sendfile(sharedir+'/'+filename,'/home/cameron/ftpsync/.client01Staging/'+filehash)
             sendack(filehash)
             transferManifest['transfer'][filehash]['transferred']=True
-        
-        
-        
+
         print(count,'/',len(outdateManifest)) 
         count+=1
     sendCompletebit(1) 
