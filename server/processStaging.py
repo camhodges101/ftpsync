@@ -32,17 +32,17 @@ def confirmfolder(targetdirectory):
     os.chdir(startingwd)
 
 def updateServerManifest(filepath, filehash,lastmodtime):
-    with open('/home/{}/ftpsyncstorage/serverManifest.json'.format(serverUser),'r') as infile:
+    with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'r') as infile:
         serverManifest=json.load(infile)
     serverManifest[filepath]={'hash':filehash,'modtime':lastmodtime,'flags':[0,0,0],'repeat':False}
-    with open('/home/{}/ftpsyncstorage/serverManifest.json'.format(serverUser),'w') as outfile:
+    with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'w') as outfile:
         json.dump(serverManifest,outfile)
 
 def updateTransferManifest(filehash):
-    with open('/home/{}/ftpsyncstorage/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
+    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
         transferManifest=json.load(infile)
     transferManifest['transfer'][filehash]['Processed']=True
-    with open('/home/{}/ftpsyncstorage/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
+    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
         json.dump(transferManifest,outfile)
 
 
@@ -61,9 +61,9 @@ def gethash(filename):
             sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
 
-os.chdir('/home/{}/ftpsyncstorage/'.format(serverUser))
+os.chdir('/home/{}/ftpsync/'.format(serverUser))
 
-with open('/home/{}/ftpsyncstorage/.client01Control/transferManifest.json'.format(serverUser)) as infile:
+with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser)) as infile:
     transferManifest=json.load(infile)
 #print(transferManifest)
 
