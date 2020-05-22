@@ -15,12 +15,12 @@ from subprocess import check_output
 
 #%%
 
-sharedir='/home/cameron/ftpsync'
+sharedir='/home/pi/ftpsync'
 clientID='01'
 serverHost='192.168.0.125'
 port=55
 sshkey='~/.ssh/testpi.key'
-serverUser='cameron'
+serverUser='pi'
 
 def senddata(msg):
     UDP_IP = "127.0.0.1"
@@ -32,7 +32,7 @@ def senddata(msg):
 
 def generateTransferManifest(clientManifest,serverManifest):
 
-    with sftp.open("/home/cameron/ftpsync/.client01Control/transferManifest.json") as infile:
+    with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser)) as infile:
         transfermanifest = json.load(infile)
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
@@ -46,21 +46,21 @@ def generateTransferManifest(clientManifest,serverManifest):
             transfermanifest['transfer'][filehash]['path']+=[filename]
             transfermanifest['transfer'][filehash]['lastmodtime']=lastmodifiedtime
         
-    with sftp.open("/home/cameron/ftpsync/.client01Control/transferManifest.json",'w') as outfile:
+    with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser),'w') as outfile:
         json.dump(transfermanifest,outfile)
     
     return transfermanifest
 def getServerManifest():
-    with sftp.open("/home/cameron/ftpsync/serverManifest.json") as infile:
+    with sftp.open("/home/{}/ftpsync/serverManifest.json".format(serverUser)) as infile:
         serverManifest = json.load(infile)
     return serverManifest
 def checkR2R():
-    flagFile=sftp.open("/home/cameron/ftpsync/.client01Control/readyReceive", "r")
+    flagFile=sftp.open("/home/{}/ftpsync/.client01Control/readyReceive".format(serverUser), "r")
     return int(flagFile.read())==1
 def sendfile(localpath,remotepath):
     sftp.put(localpath,remotepath)
 def sendCompletebit(value):
-    text_file = sftp.open("/home/cameron/ftpsync/.client01Control/sendComplete", "w")
+    text_file = sftp.open("/home/{}/ftpsync/.client01Control/sendComplete".format(serverUser), "w")
     n = text_file.write(str(value))
     text_file.close()
 def sendack(filehash):
