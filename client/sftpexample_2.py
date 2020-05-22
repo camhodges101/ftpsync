@@ -15,7 +15,7 @@ from subprocess import check_output
 
 #%%
 
-sharedir='/home/pi/ftpsync'
+sharedir='/home/cameron/Dropbox/CamsDocuments/ftpsync'
 clientID='01'
 serverHost='192.168.0.125'
 port=55
@@ -151,7 +151,7 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
 
         if transferManifest['transfer'][filehash]['transferred']==False:
             
-            sendfile(sharedir+'/'+filename,'/home/cameron/ftpsync/.client01Staging/'+filehash)
+            sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverName,filehash))
             sendack(filehash)
             transferManifest['transfer'][filehash]['transferred']=True
 
