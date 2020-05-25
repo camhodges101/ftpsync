@@ -15,7 +15,7 @@ from subprocess import check_output
 
 #%%
 
-sharedir='/home/cameron/Dropbox/CamsDocuments/ftpsync'
+sharedir='/home/cameron/Dropbox/CamsDocuments'
 clientID='01'
 serverHost='192.168.0.125'
 port=55
@@ -39,7 +39,7 @@ def generateTransferManifest(clientManifest,serverManifest):
             print(file)
             filename=file
             filehash=clientManifest[file]['hash']
-            lastmodifiedtime=clientManifest[file]['modtime']
+            lastmodifiedtime=clientManifest[file]['lastmodtime']
             if filehash not in transfermanifest['transfer']:
                 transfermanifest['transfer'][filehash]={'path':[],'lastmodtime':0,'transferred':False,'Processed':False}
     
@@ -92,7 +92,7 @@ def updateManifest():
         
         for file in files:
             filepath=parent_directory+'/'+file
-            manifest[filepath[len(sharedir):]]={'hash':'','modtime':0,'flags':[0,0,0],'repeat':False}
+            manifest[filepath[len(sharedir):]]={'hash':'','lastmodtime':0,'flags':[0,0,0],'repeat':False}
             ##Flag format delete,transfer,other
     
     
@@ -110,7 +110,7 @@ def updateManifest():
         
     for idx, file in enumerate(manifest):
         manifest[file]['hash']=gethash(sharedir+file)
-        manifest[file]['modtime']=os.path.getmtime(sharedir+file)
+        manifest[file]['lastmodtime']=os.path.getmtime(sharedir+file)
 
     return manifest
 while True:
@@ -125,8 +125,10 @@ while True:
         senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
 
 count=1
+#cnopts = pysftp.CnOpts(knownhosts='/home/cameron/.ssh/known_hosts')
 cnopts = pysftp.CnOpts()
-cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
+cnopts.hostkeys = None   
+#cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
 with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key=sshkey,cnopts=cnopts) as sftp:
     #Send Connected Message to GUI
     #Send Transfer Mode Idle to GUI
@@ -151,7 +153,7 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
 
         if transferManifest['transfer'][filehash]['transferred']==False:
             
-            sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverName,filehash))
+            sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverUser,filehash))
             sendack(filehash)
             transferManifest['transfer'][filehash]['transferred']=True
 

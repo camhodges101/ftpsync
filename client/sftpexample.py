@@ -125,8 +125,8 @@ while True:
         senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
 
 count=1
-cnopts = pysftp.CnOpts()
-cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
+cnopts = pysftp.CnOpts(knownhosts='/home/cameron/.ssh/known_hosts')
+#cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
 with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key=sshkey,cnopts=cnopts) as sftp:
     #Send Connected Message to GUI
     #Send Transfer Mode Idle to GUI

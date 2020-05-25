@@ -34,7 +34,7 @@ def confirmfolder(targetdirectory):
 def updateServerManifest(filepath, filehash,lastmodtime):
     with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'r') as infile:
         serverManifest=json.load(infile)
-    serverManifest[filepath]={'hash':filehash,'modtime':lastmodtime,'flags':[0,0,0],'repeat':False}
+    serverManifest[filepath]={'hash':filehash,'lastmodtime':lastmodtime,'flags':[0,0,0],'repeat':False}
     with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'w') as outfile:
         json.dump(serverManifest,outfile)
 
