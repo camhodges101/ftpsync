@@ -1,7 +1,8 @@
 import socket, select
 import json
 import hashlib
-from time import sleep
+
+import time
 def gethash(filename):
     sha256_hash = hashlib.sha256()
 
@@ -29,11 +30,11 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('',port))
 
 while True:
-
+    ti = time.time()
     result = select.select([s],[],[])
     msg = result[0][0].recv(bufferSize)
     msg=msg.decode('UTF-8')
     header,client,filehash=msg.split(',')
     markack(filehash)    
-    print(msg)
+    print("{} -{}".format(round(time.time(),3)-ti,msg))
 

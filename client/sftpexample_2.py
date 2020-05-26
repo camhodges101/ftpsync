@@ -13,6 +13,8 @@ import socket
 import hashlib
 from subprocess import check_output
 
+from datetime import datetime
+
 #%%
 
 sharedir='/home/cameron/Dropbox/CamsDocuments'
@@ -21,6 +23,15 @@ serverHost='192.168.0.125'
 port=55
 sshkey='~/.ssh/testpi.key'
 serverUser='pi'
+
+
+def writetologs(message):
+    timestamp=datetime.now()
+    file_object = open('sftpSync.log', 'a')
+    file_object.write(str(timestamp)+" - "+message+"\n")
+     
+    file_object.close()
+    
 
 def senddata(msg):
     UDP_IP = "127.0.0.1"
@@ -34,9 +45,10 @@ def generateTransferManifest(clientManifest,serverManifest):
 
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser)) as infile:
         transfermanifest = json.load(infile)
+    writetologs("Creating Outdated Transfer Manifest")
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
-            print(file)
+            
             filename=file
             filehash=clientManifest[file]['hash']
             lastmodifiedtime=clientManifest[file]['lastmodtime']
@@ -45,12 +57,13 @@ def generateTransferManifest(clientManifest,serverManifest):
     
             transfermanifest['transfer'][filehash]['path']+=[filename]
             transfermanifest['transfer'][filehash]['lastmodtime']=lastmodifiedtime
-        
+    writetologs("Sending Transfer Manifest")    
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser),'w') as outfile:
         json.dump(transfermanifest,outfile)
     
     return transfermanifest
 def getServerManifest():
+    writetologs("Got Server Manifest")
     with sftp.open("/home/{}/ftpsync/serverManifest.json".format(serverUser)) as infile:
         serverManifest = json.load(infile)
     return serverManifest
@@ -85,6 +98,7 @@ Message structure
     
 def updateManifest():
     manifest={}
+    writetologs("Updating Client Manifest")
     listing=os.walk(sharedir)
     for items in listing:
         parent_directory, subdirectory, files=items[0],items[1],items[2]
@@ -116,11 +130,12 @@ def updateManifest():
 while True:
     try:    
         check_output(['ping','-c','1',serverHost],timeout=0.25)
+        writetologs("Connection Established")
         outdateManifest=updateManifest()
         break
     except:
         outdateManifest=updateManifest()
-        print("No Connection")
+        writetologs("No Connection")
         #Send Disconnected Message to GUI
         senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
 
@@ -139,7 +154,7 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
     serverManifest=getServerManifest()
 
     sendCompletebit(0) 
-
+    senddata(",".join(["0x10",str(""),str(""),"Indexing",serverHost,"Connected"]))
     print('sent manifest')
     transferManifest=generateTransferManifest(outdateManifest,serverManifest)
     #Send transfer mode Transferring message to GUI
@@ -147,20 +162,25 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
     senddata(",".join(["0x10",str(len(transferManifest)),str(""),"Idle",serverHost,"Connected"]))
     for idx,filehash in enumerate(transferManifest['transfer']):
         #Send number of files transfered update to GUI idx
-        senddata(",".join(["0x10",str(len(transferManifest)),str(idx),"Transferring",serverHost,"Connected"]))
+        senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(idx),"Transferring",serverHost,"Connected"]))
         print(filehash)
         filename=transferManifest['transfer'][filehash]['path'][0]
 
         if transferManifest['transfer'][filehash]['transferred']==False:
-            
+            writetologs("Transferring {}".format(filename))
             sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverUser,filehash))
             sendack(filehash)
+            '''
+            If we send message too fast the Rasp pi can't process them, drops messages and therefore doesn't mark the files as confirmed transferred, added a delay to allow the Pi to catch up, this is super hacky, need to come up with a better methods. 
+            '''
+            time.sleep(0.2) 
             transferManifest['transfer'][filehash]['transferred']=True
 
         print(count,'/',len(outdateManifest)) 
         count+=1
     sendCompletebit(1) 
     sftp.close()
+    senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(idx),"Idle",serverHost,"Connected"]))
 
 
 
