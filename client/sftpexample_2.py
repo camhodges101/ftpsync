@@ -164,6 +164,7 @@ while True:
                 writetologs("No Connection")
                 #Send Disconnected Message to GUI
                 senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
+                time.sleep(120)
       
         count=1
         #cnopts = pysftp.CnOpts(knownhosts='/home/cameron/.ssh/known_hosts')
@@ -212,6 +213,7 @@ while True:
         time.sleep(60)
     except:
         writetologs("Connection Lost, Retrying")
+        time.sleep(120)
         pass
 
 
