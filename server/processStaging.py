@@ -1,6 +1,7 @@
 import json
 import shutil as su
 import hashlib
+from time import sleep
 import os
 serverUser = "pi"
 def confirmtransfercomplete():
@@ -63,20 +64,26 @@ def gethash(filename):
 
 os.chdir('/home/{}/ftpsync/'.format(serverUser))
 
-with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser)) as infile:
-    transferManifest=json.load(infile)
-#print(transferManifest)
-
-for idx, filehash in enumerate(transferManifest['transfer']):
-    if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==False and gethash('.client01Staging/'+filehash)==filehash:
-        paths=transferManifest['transfer'][filehash]['path']
-        modtimes=transferManifest['transfer'][filehash]['lastmodtime']
-        print('{}-{}'.format(idx,filehash))
-        for path,modtime in zip(paths,modtimes):
-            confirmfolder(path.split('/')[:-1])
-            su.copy('.client01Staging/'+filehash,correctserverpath(path))
-            updateServerManifest(path,filehash,modtime)
-        updateTransferManifest(filehash)
-        os.remove('.client01Staging/'+filehash)
-
-confirmtransfercomplete()
+def checkSC():
+    flagFile=open("/home/{}/ftpsync/.client01Control/sendComplete".format(serverUser), "r")
+    return int(flagFile.read())==1
+while True:
+    if checkSC():
+        with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser)) as infile:
+            transferManifest=json.load(infile)
+        #print(transferManifest)
+        
+        for idx, filehash in enumerate(transferManifest['transfer']):
+            if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==False and gethash('.client01Staging/'+filehash)==filehash:
+                paths=transferManifest['transfer'][filehash]['path']
+                modtimes=transferManifest['transfer'][filehash]['lastmodtime']
+                print('{}-{}'.format(idx,filehash))
+                for path,modtime in zip(paths,modtimes):
+                    confirmfolder(path.split('/')[:-1])
+                    su.copy('.client01Staging/'+filehash,correctserverpath(path))
+                    updateServerManifest(path,filehash,modtime)
+                updateTransferManifest(filehash)
+                os.remove('.client01Staging/'+filehash)
+        
+        confirmtransfercomplete()
+    sleep(30)
