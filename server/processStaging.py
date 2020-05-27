@@ -13,7 +13,11 @@ def confirmtransfercomplete():
             del transdict['transfer'][filehash]
     with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
             json.dump(transdict,outfile)
-        
+
+def readyRecievebit(value):
+    text_file = open("/home/{}/ftpsync/.client01Control/readyReceive".format(serverUser), "w")
+    n = text_file.write(str(value))
+    text_file.close()        
 
 
 def confirmfolder(targetdirectory):
@@ -67,8 +71,11 @@ os.chdir('/home/{}/ftpsync/'.format(serverUser))
 def checkSC():
     flagFile=open("/home/{}/ftpsync/.client01Control/sendComplete".format(serverUser), "r")
     return int(flagFile.read())==1
+
+
 while True:
     if checkSC():
+        readyRecievebit(0)
         with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser)) as infile:
             transferManifest=json.load(infile)
         #print(transferManifest)
@@ -86,4 +93,5 @@ while True:
                 os.remove('.client01Staging/'+filehash)
         
         confirmtransfercomplete()
+        readyRecievebit(1)
     sleep(30)
