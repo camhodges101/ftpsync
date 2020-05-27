@@ -49,6 +49,13 @@ def generateTransferManifest(clientManifest,serverManifest):
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
             
+            if file not in serverManifest: 
+                print("File no on server")
+            elif clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
+                print("file out of date")
+            
+            
+            
             filename=file
             filehash=clientManifest[file]['hash']
             lastmodifiedtime=clientManifest[file]['lastmodtime']
@@ -173,7 +180,7 @@ with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key
             '''
             If we send message too fast the Rasp pi can't process them, drops messages and therefore doesn't mark the files as confirmed transferred, added a delay to allow the Pi to catch up, this is super hacky, need to come up with a better methods. 
             '''
-            time.sleep(0.2) 
+            time.sleep(0.8) 
             transferManifest['transfer'][filehash]['transferred']=True
 
         print(count,'/',len(outdateManifest)) 

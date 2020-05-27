@@ -74,7 +74,7 @@ for idx, filehash in enumerate(transferManifest['transfer']):
         for path in paths:
             confirmfolder(path.split('/')[:-1])
             su.copy('.client01Staging/'+filehash,correctserverpath(path))
-        updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
+            updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
         updateTransferManifest(filehash)
         os.remove('.client01Staging/'+filehash)
 
