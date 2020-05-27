@@ -16,7 +16,11 @@ from subprocess import check_output
 from datetime import datetime
 
 #%%
+'''
 
+Need a unique last mod time for each file path even if they have the same hash. 
+
+'''
 sharedir='/home/cameron/Dropbox/CamsDocuments'
 clientID='01'
 serverHost='192.168.0.125'
@@ -55,12 +59,13 @@ def generateTransferManifest(clientManifest,serverManifest):
     writetologs("Creating Outdated Transfer Manifest")
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
-            '''
+            
             if file not in serverManifest: 
                 print("File not on server")
             elif clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
                 print("file out of date")
-            '''
+                print(os.path.getmtime(sharedir+file))
+            
             
             
             filename=file
@@ -68,10 +73,10 @@ def generateTransferManifest(clientManifest,serverManifest):
             filehash=gethash(sharedir+file)
             lastmodifiedtime=clientManifest[file]['lastmodtime']
             if filehash not in transfermanifest['transfer']:
-                transfermanifest['transfer'][filehash]={'path':[],'lastmodtime':0,'transferred':False,'Processed':False}
+                transfermanifest['transfer'][filehash]={'path':[],'lastmodtime':[],'transferred':False,'Processed':False}
     
             transfermanifest['transfer'][filehash]['path']+=[filename]
-            transfermanifest['transfer'][filehash]['lastmodtime']=lastmodifiedtime
+            transfermanifest['transfer'][filehash]['lastmodtime']+=[lastmodifiedtime]
     writetologs("Sending Transfer Manifest")    
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser),'w') as outfile:
         json.dump(transfermanifest,outfile)

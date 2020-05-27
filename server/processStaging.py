@@ -70,11 +70,12 @@ with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serve
 for idx, filehash in enumerate(transferManifest['transfer']):
     if transferManifest['transfer'][filehash]['transferred']==True and transferManifest['transfer'][filehash]['Processed']==False and gethash('.client01Staging/'+filehash)==filehash:
         paths=transferManifest['transfer'][filehash]['path']
+        modtimes=transferManifest['transfer'][filehash]['lastmodtime']
         print('{}-{}'.format(idx,filehash))
-        for path in paths:
+        for path,modtime in zip(paths,modtimes):
             confirmfolder(path.split('/')[:-1])
             su.copy('.client01Staging/'+filehash,correctserverpath(path))
-            updateServerManifest(path,filehash,transferManifest['transfer'][filehash]['lastmodtime'])
+            updateServerManifest(path,filehash,modtime)
         updateTransferManifest(filehash)
         os.remove('.client01Staging/'+filehash)
 
