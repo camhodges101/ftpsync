@@ -24,7 +24,14 @@ port=55
 sshkey='~/.ssh/testpi.key'
 serverUser='pi'
 
-
+def gethash(filename):
+        sha256_hash = hashlib.sha256()
+    
+        with open(filename,"rb") as f:
+            # Read and update hash string value in blocks of 4K
+            for byte_block in iter(lambda: f.read(4096),b""):
+                sha256_hash.update(byte_block)
+            return sha256_hash.hexdigest()
 def writetologs(message):
     timestamp=datetime.now()
     file_object = open('sftpSync.log', 'a')
@@ -48,16 +55,17 @@ def generateTransferManifest(clientManifest,serverManifest):
     writetologs("Creating Outdated Transfer Manifest")
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
-            
+            '''
             if file not in serverManifest: 
-                print("File no on server")
+                print("File not on server")
             elif clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
                 print("file out of date")
-            
+            '''
             
             
             filename=file
-            filehash=clientManifest[file]['hash']
+            #filehash=clientManifest[file]['hash']
+            filehash=gethash(sharedir+file)
             lastmodifiedtime=clientManifest[file]['lastmodtime']
             if filehash not in transfermanifest['transfer']:
                 transfermanifest['transfer'][filehash]={'path':[],'lastmodtime':0,'transferred':False,'Processed':False}
@@ -130,7 +138,7 @@ def updateManifest():
             return sha256_hash.hexdigest()
         
     for idx, file in enumerate(manifest):
-        manifest[file]['hash']=gethash(sharedir+file)
+        #manifest[file]['hash']=gethash(sharedir+file)
         manifest[file]['lastmodtime']=os.path.getmtime(sharedir+file)
 
     return manifest

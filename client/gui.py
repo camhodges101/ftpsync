@@ -79,7 +79,7 @@ class statusForm(npyscreen.Form):
         self.connectionstate=latestserverattempt #Connected, Connecting, Disconnected, 
         self.recentfileslist=recentfilesdata
         spaceing=35
-        self.time  = self.add(npyscreen.TitleText, name = str("Systtem Time:"),value='',editable=False,begin_entry_at=spaceing)
+        self.time  = self.add(npyscreen.TitleText, name = str("System Time:"),value='',editable=False,begin_entry_at=spaceing)
         self.filecount  = self.add(npyscreen.TitleText, name = str("Number of Files to Transfer:"),value='',editable=False,begin_entry_at=spaceing)
         self.mode  = self.add(npyscreen.TitleText, name = str("Transfer Mode: "),value='',editable=False,begin_entry_at=spaceing)
         self.host  = self.add(npyscreen.TitleText, name = str("Server Host Name: "),value='',editable=False,begin_entry_at=spaceing)
