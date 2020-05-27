@@ -53,19 +53,23 @@ def senddata(msg):
     sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
 def generateTransferManifest(clientManifest,serverManifest):
-
+    
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser)) as infile:
-        transfermanifest = json.load(infile)
+        try:
+            transfermanifest = json.load(infile)
+        except:
+            transfermanifest = {"transfer":{},"delete":{}}
+            writetologs("Existing Transfer Manifest Corrupt, starting fresh")
     writetologs("Creating Outdated Transfer Manifest")
     for file in clientManifest:
         if file not in serverManifest or clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
-            
+            '''
             if file not in serverManifest: 
                 print("File not on server")
             elif clientManifest[file]['lastmodtime']>serverManifest[file]['lastmodtime']:
                 print("file out of date")
                 print(os.path.getmtime(sharedir+file))
-            
+            '''
             
             
             filename=file
@@ -148,60 +152,67 @@ def updateManifest():
 
     return manifest
 while True:
-    try:    
-        check_output(['ping','-c','1',serverHost],timeout=0.25)
-        writetologs("Connection Established")
-        outdateManifest=updateManifest()
-        break
+    try:
+        while True:
+            try:    
+                check_output(['ping','-c','1',serverHost],timeout=0.25)
+                writetologs("Connection Established")
+                outdateManifest=updateManifest()
+                break
+            except:
+                outdateManifest=updateManifest()
+                writetologs("No Connection")
+                #Send Disconnected Message to GUI
+                senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
+      
+        count=1
+        #cnopts = pysftp.CnOpts(knownhosts='/home/cameron/.ssh/known_hosts')
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None   
+        #cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
+        with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key=sshkey,cnopts=cnopts) as sftp:
+            #Send Connected Message to GUI
+            #Send Transfer Mode Idle to GUI
+            senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
+            while not checkR2R():
+                time.sleep(5)
+            
+            serverManifest=getServerManifest()
+        
+            sendCompletebit(0) 
+            senddata(",".join(["0x10",str(""),str(""),"Indexing",serverHost,"Connected"]))
+            #print('sent manifest')
+            transferManifest=generateTransferManifest(outdateManifest,serverManifest)
+            #Send transfer mode Transferring message to GUI
+            #Send Number of files to transfer to GUI len(transferManifest)
+            senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
+            if len(transferManifest['transfer'])>0:
+                senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(""),"Idle",serverHost,"Connected"]))
+                for idx,filehash in enumerate(transferManifest['transfer']):
+                    #Send number of files transfered update to GUI idx
+                    senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(idx),"Transferring",serverHost,"Connected"]))
+                    print(filehash)
+                    filename=transferManifest['transfer'][filehash]['path'][0]
+            
+                    if transferManifest['transfer'][filehash]['transferred']==False:
+                        writetologs("Transferring {}".format(filename))
+                        sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverUser,filehash))
+                        sendack(filehash)
+                        '''
+                        If we send message too fast the Rasp pi can't process them, drops messages and therefore doesn't mark the files as confirmed transferred, added a delay to allow the Pi to catch up, this is super hacky, need to come up with a better methods. 
+                        '''
+                        time.sleep(0.8) 
+                        transferManifest['transfer'][filehash]['transferred']=True
+            
+                    print(count,'/',len(outdateManifest)) 
+                    count+=1
+                sendCompletebit(1) 
+            sftp.close()
+            senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
+        time.sleep(60)
     except:
-        outdateManifest=updateManifest()
-        writetologs("No Connection")
-        #Send Disconnected Message to GUI
-        senddata(",".join(["0x10",str(""),str(""),"",serverHost,"Disconnected"]))
-
-count=1
-#cnopts = pysftp.CnOpts(knownhosts='/home/cameron/.ssh/known_hosts')
-cnopts = pysftp.CnOpts()
-cnopts.hostkeys = None   
-#cnopts.hostkeys.load('/home/cameron/.ssh/known_hosts')  
-with pysftp.Connection(host=serverHost,username=serverUser,port=port,private_key=sshkey,cnopts=cnopts) as sftp:
-    #Send Connected Message to GUI
-    #Send Transfer Mode Idle to GUI
-    senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
-    while not checkR2R():
-        time.sleep(5)
-    
-    serverManifest=getServerManifest()
-
-    sendCompletebit(0) 
-    senddata(",".join(["0x10",str(""),str(""),"Indexing",serverHost,"Connected"]))
-    print('sent manifest')
-    transferManifest=generateTransferManifest(outdateManifest,serverManifest)
-    #Send transfer mode Transferring message to GUI
-    #Send Number of files to transfer to GUI len(transferManifest)
-    senddata(",".join(["0x10",str(len(transferManifest)),str(""),"Idle",serverHost,"Connected"]))
-    for idx,filehash in enumerate(transferManifest['transfer']):
-        #Send number of files transfered update to GUI idx
-        senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(idx),"Transferring",serverHost,"Connected"]))
-        print(filehash)
-        filename=transferManifest['transfer'][filehash]['path'][0]
-
-        if transferManifest['transfer'][filehash]['transferred']==False:
-            writetologs("Transferring {}".format(filename))
-            sendfile(sharedir+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(serverUser,filehash))
-            sendack(filehash)
-            '''
-            If we send message too fast the Rasp pi can't process them, drops messages and therefore doesn't mark the files as confirmed transferred, added a delay to allow the Pi to catch up, this is super hacky, need to come up with a better methods. 
-            '''
-            time.sleep(0.8) 
-            transferManifest['transfer'][filehash]['transferred']=True
-
-        print(count,'/',len(outdateManifest)) 
-        count+=1
-    sendCompletebit(1) 
-    sftp.close()
-    senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(idx),"Idle",serverHost,"Connected"]))
-
+        writetologs("Connection Lost, Retrying")
+        pass
 
 
 
