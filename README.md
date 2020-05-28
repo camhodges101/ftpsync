@@ -15,3 +15,5 @@
     3. more efficient handling if files are moved to different directories (currrently they need to be retransferred instead of just moved on file server)
     4. Replace terminal GUI with web GUI
     5. multi client support (including mobile)
+    6. Make pause function work
+    7. Add list of unsynced files
