@@ -20,9 +20,11 @@ def readyRecievebit(value):
     text_file.close()        
 
 
-def confirmfolder(targetdirectory):
-
-    base=['storage']
+def confirmfolder(targetdirectory, basepath="storage"):
+    if basepath == 'storage':
+        base=['storage']
+    else:
+        base=['archive']
     base.extend(targetdirectory)
     targetdirectory=base
     targetdirectory=list(filter(None,targetdirectory))
@@ -65,7 +67,13 @@ def gethash(filename):
         for byte_block in iter(lambda: f.read(4096),b""):
             sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
+    
 
+def archivefiles(filepath):
+    confirmfolder(filepath.split('/'),'archive')
+    su.move('storage'+filepath,'archive'+filepath+"/"+filepath.split('/')[-1])
+
+#############################################
 os.chdir('/home/{}/ftpsync/'.format(serverUser))
 
 def checkSC():
@@ -91,7 +99,8 @@ while True:
                     updateServerManifest(path,filehash,modtime)
                 updateTransferManifest(filehash)
                 os.remove('.client01Staging/'+filehash)
-        
+        for idx, filepath in enumerate(transferManifest['delete']):
+            archivefiles(filepath)
         confirmtransfercomplete()
         readyRecievebit(1)
     sleep(30)

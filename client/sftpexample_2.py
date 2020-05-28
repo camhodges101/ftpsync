@@ -81,6 +81,13 @@ def generateTransferManifest(clientManifest,serverManifest):
     
             transfermanifest['transfer'][filehash]['path']+=[filename]
             transfermanifest['transfer'][filehash]['lastmodtime']+=[lastmodifiedtime]
+    
+    
+    for file in serverManifest:
+        if file not in clientManifest:
+            transfermanifest["delete"][file]={"hash":serverManifest[file]["hash"],"lastmodtime":serverManifest[file]["lastmodtime"]}
+            writetologs("Deleting: {}".format(file))
+    
     writetologs("Sending Transfer Manifest")    
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(serverUser),'w') as outfile:
         json.dump(transfermanifest,outfile)
