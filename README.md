@@ -1,5 +1,8 @@
 # ftpsync
 ![](GUI.png)
+
+A simple process for creating Dropbox like sync between a Ubuntu client PC and a Raspberry Pi file server using sftp tools over a local network or VPN. 
+
 # Features that work
     1. Automatically syncs new files to file server to mirror client file structure
     2. GUI updates with state of sync script, GUI can be run and killed independantly to sync script
