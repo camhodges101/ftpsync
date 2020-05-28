@@ -38,12 +38,22 @@ def confirmfolder(targetdirectory, basepath="storage"):
 
     os.chdir(startingwd)
 
-def updateServerManifest(filepath, filehash,lastmodtime):
+def updateServerManifest(filepath='', filehash='',lastmodtime='',mode="Transfer"):
     with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'r') as infile:
         serverManifest=json.load(infile)
-    serverManifest[filepath]={'hash':filehash,'lastmodtime':lastmodtime,'flags':[0,0,0],'repeat':False}
-    with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'w') as outfile:
-        json.dump(serverManifest,outfile)
+    
+    if mode == "Transfer":
+        serverManifest[filepath]={'hash':filehash,'lastmodtime':lastmodtime,'flags':[0,0,0],'repeat':False}
+        with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'w') as outfile:
+            json.dump(serverManifest,outfile)
+        
+    elif mode == "archive":
+        serverDict=serverManifest.copy()
+        del serverDict[filepath]
+        with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'w') as outfile:
+            json.dump(serverDict,outfile)
+
+
 
 def updateTransferManifest(filehash):
     with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
@@ -101,6 +111,8 @@ while True:
                 os.remove('.client01Staging/'+filehash)
         for idx, filepath in enumerate(transferManifest['delete']):
             archivefiles(filepath)
+            updateServerManifest(filepath=filepath,mode="archive")
+            print("archiving files")
         confirmtransfercomplete()
         readyRecievebit(1)
     sleep(30)

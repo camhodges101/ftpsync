@@ -85,7 +85,7 @@ def generateTransferManifest(clientManifest,serverManifest):
     
     for file in serverManifest:
         if file not in clientManifest:
-            transfermanifest["delete"][file]={"hash":serverManifest[file]["hash"],"lastmodtime":serverManifest[file]["lastmodtime"]}
+            transfermanifest["delete"][file]={"hash":serverManifest[file]["hash"],"lastmodtime":serverManifest[file]["lastmodtime"],"Processed":False}
             writetologs("Deleting: {}".format(file))
     
     writetologs("Sending Transfer Manifest")    
@@ -159,7 +159,8 @@ def updateManifest():
 
     return manifest
 while True:
-    try:
+    
+    try:    
         while True:
             try:    
                 check_output(['ping','-c','1',serverHost],timeout=0.25)
@@ -194,7 +195,7 @@ while True:
             #Send transfer mode Transferring message to GUI
             #Send Number of files to transfer to GUI len(transferManifest)
             senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
-            if len(transferManifest['transfer'])>0:
+            if len(transferManifest['transfer'])>0 or len(transferManifest['delete'])>0:
                 senddata(",".join(["0x10",str(len(transferManifest['transfer'])),str(""),"Idle",serverHost,"Connected"]))
                 for idx,filehash in enumerate(transferManifest['transfer']):
                     #Send number of files transfered update to GUI idx
@@ -218,10 +219,10 @@ while True:
             sftp.close()
             senddata(",".join(["0x10",str(""),str(""),"Idle",serverHost,"Connected"]))
         time.sleep(60)
+
     except:
         writetologs("Connection Lost, Retrying")
         time.sleep(120)
         pass
-
 
 
