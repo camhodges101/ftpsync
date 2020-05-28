@@ -21,12 +21,12 @@ from datetime import datetime
 Need a unique last mod time for each file path even if they have the same hash. 
 
 '''
-sharedir='/home/cameron/Dropbox/CamsDocuments'
-clientID='01'
-serverHost='192.168.0.125'
-port=55
-sshkey='~/.ssh/testpi.key'
-serverUser='pi'
+sharedir=''
+clientID=''
+serverHost=''
+port=
+sshkey=''
+serverUser=''
 
 def gethash(filename):
         sha256_hash = hashlib.sha256()
