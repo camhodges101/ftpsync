@@ -13,6 +13,17 @@ def confirmtransfercomplete():
             del transdict['transfer'][filehash]
     with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
             json.dump(transdict,outfile)
+            
+            
+            
+    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
+        transferManifest=json.load(infile)
+    transdict=transferManifest.copy()
+    for filepath in list(transferManifest['delete']):
+        if transferManifest['delete'][filepath]['Processed']==True:
+            del transdict['delete'][filepath]
+    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
+            json.dump(transdict,outfile)
 
 def readyRecievebit(value):
     text_file = open("/home/{}/ftpsync/.client01Control/readyReceive".format(serverUser), "w")
@@ -55,14 +66,20 @@ def updateServerManifest(filepath='', filehash='',lastmodtime='',mode="Transfer"
 
 
 
-def updateTransferManifest(filehash):
-    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
-        transferManifest=json.load(infile)
-    transferManifest['transfer'][filehash]['Processed']=True
-    with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
-        json.dump(transferManifest,outfile)
+def updateTransferManifest(filehash='',filepath='',mode="transfer"):
+    if mode == 'transfer':
+        with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
+            transferManifest=json.load(infile)
+        transferManifest['transfer'][filehash]['Processed']=True
+        with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
+            json.dump(transferManifest,outfile)
 
-
+    elif mode == "archive":
+        with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
+            transferManifest=json.load(infile)
+        transferManifest['delete'][filepath]['Processed']=True
+        with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
+            json.dump(transferManifest,outfile) 
 def  correctserverpath(fullpath):
 
     return 'storage'+fullpath
@@ -111,6 +128,7 @@ while True:
                 os.remove('.client01Staging/'+filehash)
         for idx, filepath in enumerate(transferManifest['delete']):
             archivefiles(filepath)
+            updateTransferManifest(filepath,mode="archive")
             updateServerManifest(filepath=filepath,mode="archive")
             print("archiving files")
         confirmtransfercomplete()
