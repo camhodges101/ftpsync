@@ -1,5 +1,5 @@
 # ftpsync
-
+![](GUI.png)
 # Features that work
     1. Automatically syncs new files to file server to mirror client file structure
     2. GUI updates with state of sync script, GUI can be run and killed independantly to sync script
