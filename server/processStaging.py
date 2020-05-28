@@ -128,7 +128,7 @@ while True:
                 os.remove('.client01Staging/'+filehash)
         for idx, filepath in enumerate(transferManifest['delete']):
             archivefiles(filepath)
-            updateTransferManifest(filepath,mode="archive")
+            updateTransferManifest(filepath=filepath,mode="archive")
             updateServerManifest(filepath=filepath,mode="archive")
             print("archiving files")
         confirmtransfercomplete()
