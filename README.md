@@ -6,7 +6,7 @@ A simple process for creating Dropbox like sync between a Ubuntu client PC and a
 # Features that work
     1. Automatically syncs new files to file server to mirror client file structure
     2. GUI updates with state of sync script, GUI can be run and killed independantly to sync script
-    3. Files that are deleted on client are archived on file server for recovered if needed
+    3. Files that are deleted on client are archived on file server for recovery if needed
     4. Normal expected disconnects and file faults are handled. 
     5. client logging for troubleshooting
     6. Efficient transfer of duplicate files, duplicates are identified by SHA256 hash, duplicate files are only transferred once and then copied on file server
