@@ -101,20 +101,40 @@ def generateTransferManifest(clientManifest,serverManifest):
     
     return transfermanifest
 def getServerManifest():
+    '''
+    Function to grab the lastest version of the serverManifest from the server, this is stored in local memory and used to determine files to transfer
+    '''
     writetologs("Got Server Manifest")
     with sftp.open("/home/{}/ftpsync/serverManifest.json".format(SERVERUSER)) as infile:
         serverManifest = json.load(infile)
     return serverManifest
 def checkR2R():
+    '''
+    checks if the binary flag on server shows it's ready to recieve new files.
+    returns a TRUE or FALSE
+    '''
     flagFile=sftp.open("/home/{}/ftpsync/.client01Control/readyReceive".format(SERVERUSER), "r")
     return int(flagFile.read())==1
+
 def sendfile(localpath,remotepath):
+    '''
+    sends file based on specific local path and destination
+    Needs an open sftp connection before it can be called. 
+    '''
     sftp.put(localpath,remotepath)
 def sendCompletebit(value):
+    '''
+    Sets the sendComplete flag on the server to 0 or 1 to indicate it's finished transfer files and the server can start to process them. 
+    '''
     text_file = sftp.open("/home/{}/ftpsync/.client01Control/sendComplete".format(SERVERUSER), "w")
     n = text_file.write(str(value))
     text_file.close()
+    
 def sendack(filehash):
+    '''
+    This sends a UDP message containing the filehash of a file that has been transferred to the server. This allows the server to maintain an up-to-date list of what has already been transferred which is written to disk. 
+    This is import so that transfers don't need to be repeated if either the client or server lose connection/power during a batch file transfer.
+    '''
     UDP_IP = SERVERHOST
     UDP_PORT = 5005
     client=CLIENTID
@@ -135,6 +155,12 @@ Message structure
     
     
 def updateManifest():
+    '''
+    Function is run without inputs and creates an up todate clientManifest of the file and folder structure on the client machine. This is stored in memory as a python dict. 
+    The top level keys for the dict are the file path
+    Each file gets blank placeholders for properties. 
+    The flags didn't get used in the end but I'm leaving them in as they might be used in future updates. 
+    '''
     manifest={}
     writetologs("Updating Client Manifest")
     listing=os.walk(SHAREDIR)
@@ -147,21 +173,9 @@ def updateManifest():
             manifest[filepath[len(SHAREDIR):]]={'hash':'','lastmodtime':0,'flags':[0,0,0],'repeat':False}
             ##Flag format delete,transfer,other
     
-    
-    
-    
-    
-    def gethash(filename):
-        sha256_hash = hashlib.sha256()
-    
-        with open(filename,"rb") as f:
-            # Read and update hash string value in blocks of 4K
-            for byte_block in iter(lambda: f.read(4096),b""):
-                sha256_hash.update(byte_block)
-            return sha256_hash.hexdigest()
         
     for idx, file in enumerate(manifest):
-        #manifest[file]['hash']=gethash(sharedir+file)
+        #manifest[file]['hash']=gethash(sharedir+file) # Used to calculate the file hash here but moved it to the transferManifest function to improve performance. 
         manifest[file]['lastmodtime']=os.path.getmtime(SHAREDIR+file)
 
     return manifest
@@ -170,11 +184,17 @@ while True:
     try:    
         while True:
             try:    
+                '''
+                simple ping check to see if the client in on a network with the server
+                '''
                 check_output(['ping','-c','1',SERVERHOST],timeout=0.25)
                 writetologs("Connection Established")
                 outdateManifest=updateManifest()
                 break
             except:
+                '''
+                If the ping check fails the client updates the clientManifest (I want to keep track of changes made offline) and then waits 2 mins before trying again. 
+                '''
                 outdateManifest=updateManifest()
                 writetologs("No Connection")
                 #Send Disconnected Message to GUI
@@ -197,7 +217,7 @@ while True:
         
             sendCompletebit(0) 
             senddata(",".join(["0x10",str(""),str(""),"Indexing",SERVERHOST,"Connected"]))
-            #print('sent manifest')
+
             transferManifest=generateTransferManifest(outdateManifest,serverManifest)
             #Send transfer mode Transferring message to GUI
             #Send Number of files to transfer to GUI len(transferManifest)
@@ -216,6 +236,7 @@ while True:
                         sendack(filehash)
                         '''
                         If we send message too fast the Rasp pi can't process them, drops messages and therefore doesn't mark the files as confirmed transferred, added a delay to allow the Pi to catch up, this is super hacky, need to come up with a better method. 
+                        This worked pretty well but if there is a huge number of very small files it slows down the sync rate massively.
                         '''
                         time.sleep(0.8) 
                         transferManifest['transfer'][filehash]['transferred']=True
