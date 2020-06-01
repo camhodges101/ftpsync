@@ -15,6 +15,13 @@ from subprocess import check_output
 
 from datetime import datetime
 '''
+This is the main script that runs on the client machine, the script should run continously in the background.
+
+
+'''
+
+
+'''
 This is a simple import of settings specific to my network, sourcing from a JSON allows for easy updating and keeps them out of the a public repo
 '''
 with open(".sftpcreds.json") as infile:
@@ -62,6 +69,11 @@ def writetologs(message):
 def senddata(msg):
     '''
     Function to send state update messages to the GUI, currently uses IP socket to localhost, to be replaced with UNIX Domain Socket
+    
+    --Inputs: message as string
+    
+    --Outputs: None
+    
     '''
     UDP_IP = "127.0.0.1"
     UDP_PORT = 5025
@@ -76,6 +88,11 @@ def generateTransferManifest(clientManifest,serverManifest):
     Duplicate files with the same hash only appear once in this dict, a unique key (the hash) can have multiple paths and last modified times, these are stored in lists under the key "hash" and "lastmodtime".
     Files on the that are no longer on the client are added to the dict under the top level key "delete". 
     The entire dict is then dumped to the server using the pysftp library
+
+    --Inputs: clientManifest as python Dict, serverManifest as python Dict
+    
+    --Outputs: transferManifest as python Dict
+
     '''
     with sftp.open("/home/{}/ftpsync/.client01Control/transferManifest.json".format(SERVERUSER)) as infile:
         try:
@@ -111,6 +128,11 @@ def generateTransferManifest(clientManifest,serverManifest):
 def getServerManifest():
     '''
     Function to grab the lastest version of the serverManifest from the server, this is stored in local memory and used to determine files to transfer
+    
+    --Inputs: None
+    
+    --Outputs: ServerManifest as Python Dict
+    
     '''
     writetologs("Got Server Manifest")
     with sftp.open("/home/{}/ftpsync/serverManifest.json".format(SERVERUSER)) as infile:
@@ -120,6 +142,11 @@ def checkR2R():
     '''
     checks if the binary flag on server shows it's ready to recieve new files.
     returns a TRUE or FALSE
+    
+    --Inputs: None
+    
+    --Outputs: Bool
+
     '''
     flagFile=sftp.open("/home/{}/ftpsync/.client01Control/readyReceive".format(SERVERUSER), "r")
     return int(flagFile.read())==1
@@ -128,11 +155,19 @@ def sendfile(localpath,remotepath):
     '''
     sends file based on specific local path and destination
     Needs an open sftp connection before it can be called. 
+    
+    --Inputs: localpath as string, remote path as string
+    
+    --Outputs: None
     '''
     sftp.put(localpath,remotepath)
 def sendCompletebit(value):
     '''
     Sets the sendComplete flag on the server to 0 or 1 to indicate it's finished transfer files and the server can start to process them. 
+    
+    --Inputs: int 1 or 0 to set sendCompleteFlag tp
+    
+    --Outputs: None
     '''
     text_file = sftp.open("/home/{}/ftpsync/.client01Control/sendComplete".format(SERVERUSER), "w")
     n = text_file.write(str(value))
@@ -142,6 +177,11 @@ def sendack(filehash):
     '''
     This sends a UDP message containing the filehash of a file that has been transferred to the server. This allows the server to maintain an up-to-date list of what has already been transferred which is written to disk. 
     This is import so that transfers don't need to be repeated if either the client or server lose connection/power during a batch file transfer.
+    
+    --Inputs: Filehash as string
+    
+    --Outputs: None
+    
     '''
     UDP_IP = SERVERHOST
     UDP_PORT = 5005
@@ -168,6 +208,10 @@ def updateManifest():
     The top level keys for the dict are the file path
     Each file gets blank placeholders for properties. 
     The flags didn't get used in the end but I'm leaving them in as they might be used in future updates. 
+    
+    --Inputs:
+    
+    --Outputs:
     '''
     manifest={}
     writetologs("Updating Client Manifest")
