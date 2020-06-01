@@ -104,6 +104,10 @@ def updateTransferManifest(filehash='',filepath='',mode="transfer"):
     '''
     This updates the processed indicators in the transfer manifest as each file is processed (moved to correct directory or archived)
     This seems inefficient to open and save the json for every file. the idea is to write changes to disk as often as possible so work doesn't need to be repeated if the server loses power during processing.
+    
+    --Inputs: Filehash as String or FilePath as String, Mode for whether part of transfer of new files or archive of deleted files
+    
+    --Outputs: None
     '''
     if mode == 'transfer':
         with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'r') as infile:
@@ -119,7 +123,13 @@ def updateTransferManifest(filehash='',filepath='',mode="transfer"):
         with open('/home/{}/ftpsync/.client01Control/transferManifest.json'.format(serverUser),'w') as outfile:
             json.dump(transferManifest,outfile) 
 def  correctserverpath(fullpath):
+    '''
+    Small function needed to correct path to server storage folder, will get removed soon.
+    
+    --Inputs: Filepath as string
 
+    --Outputs: path to storage location as string
+    '''
     return 'storage'+fullpath
 
 
@@ -142,6 +152,13 @@ def gethash(filename):
     
 
 def archivefiles(filepath):
+    '''
+    Function to move files into their archive directory if marked for deletion, archive directory is create if not already existing
+    
+    --Inputs: Filepath as string
+
+    --Outputs: None
+    '''
     confirmfolder(filepath.split('/'),'archive')
     su.move('storage'+filepath,'archive'+filepath+"/"+filepath.split('/')[-1])
 
@@ -149,6 +166,13 @@ def archivefiles(filepath):
 os.chdir('/home/{}/ftpsync/'.format(serverUser))
 
 def checkSC():
+    '''
+    Function to check if the client has finished sending files and marked the send complete flag as 1
+
+    --Inputs: None
+
+    --Outputs: Bool
+    '''
     flagFile=open("/home/{}/ftpsync/.client01Control/sendComplete".format(serverUser), "r")
     return int(flagFile.read())==1
 
