@@ -31,16 +31,7 @@ def getmessage():
 
 class MyGrid(npyscreen.GridColTitles):
 	pass
-    # You need to override custom_print_cell to manipulate how
-    # a cell is printed. In this example we change the color of the
-    # text depending on the string value of cell.
-    # def custom_print_cell(self, actual_cell, cell_display_value):
-        # if cell_display_value =='FAIL':
-           # actual_cell.color = 'DANGER'
-        # elif cell_display_value == 'PASS':
-           # actual_cell.color = 'GOOD'
-        # else:
-           # actual_cell.color = 'DEFAULT'
+
 		   
 
 
