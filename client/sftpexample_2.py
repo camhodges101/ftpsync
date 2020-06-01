@@ -31,6 +31,10 @@ SERVERUSER=CredientialConfig["serverUser"]
 def gethash(filename):
         '''
         basic function to take a filepath and return the SHA256 hash for the file
+
+        --Inputs: filepath as string
+
+        --Outputs: filehash as string
         '''
         sha256_hash = hashlib.sha256()
     
@@ -43,6 +47,10 @@ def gethash(filename):
 def writetologs(message):
     '''
     function to write strings with timestamp to a logfile for troubleshooting
+
+    --Inputs: Message as string
+
+    --Outputs: No value returned
     '''
     timestamp=datetime.now()
     file_object = open('sftpSync.log', 'a')

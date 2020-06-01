@@ -104,6 +104,13 @@ def  correctserverpath(fullpath):
 
 
 def gethash(filename):
+    '''
+    basic function to take a filepath and return the SHA256 hash for the file
+
+    --Inputs: filepath as string
+
+    --Outputs: filehash as string
+    '''
     sha256_hash = hashlib.sha256()
 
     with open(filename,"rb") as f:

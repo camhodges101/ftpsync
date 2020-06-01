@@ -3,6 +3,18 @@ import json
 import hashlib
 
 import time
+
+'''
+This script runs on a constant loop, it is required to listen for UDP messages from client machine
+
+Messages received contain client ID and file hash. 
+
+When each hash is receieve it is check against the file to ensure it was transfer correctly and then marked in the transferManifest as transferred=True
+
+This allows the client to restart where it left off if either the client or server process is restarted and ensures no corrupted files are backed up.
+'''
+
+
 def gethash(filename):
     sha256_hash = hashlib.sha256()
 
@@ -14,7 +26,9 @@ def gethash(filename):
 
 
 def markack(filehash):
-    
+    '''
+    Files are transferred with the SHA256 hash as it's file name, this file name can be checked against both the hash sent by the client and the actual calculated hash of the file recieved.
+    '''
     if gethash('ftpsync/.client01Staging/'+filehash)==filehash:
         with open('ftpsync/.client01Control/transferManifest.json') as infile:
             transfermanifest = json.load(infile)
