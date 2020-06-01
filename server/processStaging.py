@@ -4,6 +4,27 @@ import hashlib
 from time import sleep
 import os
 serverUser = "pi"
+'''
+This script in required to take transferred files from the client staging folder and process them to the final back up folder
+
+
+This script runs in the background on the raspberry pi server and waits for the send complete flag to be set to 1
+
+Once this occurs the script sets the ready to receive flag to 0 to ensure the client doesn't send through any more files while its running
+
+Next it runs through the Transfer manifest and looks for files that are marked is Tranferred = True, indicated they have already been check with their hash to ensure they are correctly transferred
+
+These files are copied into their destination folders (these are created if no already existing)
+
+As each file is moved it is marked as Processed = True in the transferManifest
+
+Finally any files marked for deletion are moved to their archive directorys
+
+At the end of the script all processed files are removed from the transferManifest
+
+Finally the readyRecieve flag is set to 1 to allow the client to send new files. 
+'''
+
 def confirmtransfercomplete():
     '''
     Function runs through the transfer manifest and removed items that have been processed (either moved to the correct location or archived)
