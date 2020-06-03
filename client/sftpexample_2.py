@@ -15,14 +15,12 @@ from subprocess import check_output
 
 from datetime import datetime
 '''
-This is the main script that runs on the client machine, the script should run continously in the background.
-
-
+This is the main script that runs on the client machine, the script should run continuously in the background.
 '''
 
 
 '''
-This is a simple import of settings specific to my network, sourcing from a JSON allows for easy updating and keeps them out of the a public repo
+This is a simple import of settings specific to my network, sourcing from a JSON allows for easy updating and keeps them out of the public repo
 '''
 with open(".sftpcreds.json") as infile:
     CredientialConfig=json.load(infile)
@@ -40,7 +38,9 @@ def gethash(filename):
         basic function to take a filepath and return the SHA256 hash for the file
 
         --Inputs: filepath as string
-
+        
+        --Actions: None
+        
         --Outputs: filehash as string
         '''
         sha256_hash = hashlib.sha256()
@@ -57,6 +57,8 @@ def writetologs(message):
 
     --Inputs: Message as string
 
+    --Actions: Appends string with timestamp to logfile
+    
     --Outputs: No value returned
     '''
     timestamp=datetime.now()
@@ -72,6 +74,8 @@ def senddata(msg):
     
     --Inputs: message as string
     
+    --Actions: sends message to localhost
+    
     --Outputs: None
     
     '''
@@ -84,12 +88,14 @@ def senddata(msg):
 
 def generateTransferManifest(clientManifest,serverManifest):
     '''
-    Function takes the most up-to-date client manifest and server manifest and compares them. Looks for files that aren't on the server or the server version is older, this files are added to a dict (under the top level key "Transfer") along with they critical properaties (SHA256 hash, last modified times, file directories)
+    Function takes the most up-to-date client manifest and server manifest and compares them. Looks for files that aren't on the server or the server version is older, this files are added to a dict (under the top level key "Transfer") along with they critical properties (SHA256 hash, last modified times, file directories)
     Duplicate files with the same hash only appear once in this dict, a unique key (the hash) can have multiple paths and last modified times, these are stored in lists under the key "hash" and "lastmodtime".
     Files on the that are no longer on the client are added to the dict under the top level key "delete". 
     The entire dict is then dumped to the server using the pysftp library
 
     --Inputs: clientManifest as python Dict, serverManifest as python Dict
+    
+    --Actions: Writes operations to logfile, creates a blank transferManifest if current file is malformed
     
     --Outputs: transferManifest as python Dict
 
@@ -127,9 +133,11 @@ def generateTransferManifest(clientManifest,serverManifest):
     return transfermanifest
 def getServerManifest():
     '''
-    Function to grab the lastest version of the serverManifest from the server, this is stored in local memory and used to determine files to transfer
+    Function to grab the latest version of the serverManifest from the server, this is stored in local memory and used to determine files to transfer
     
     --Inputs: None
+    
+    --Actions:
     
     --Outputs: ServerManifest as Python Dict
     
@@ -145,6 +153,8 @@ def checkR2R():
     
     --Inputs: None
     
+    --Actions:
+    
     --Outputs: Bool
 
     '''
@@ -158,6 +168,8 @@ def sendfile(localpath,remotepath):
     
     --Inputs: localpath as string, remote path as string
     
+    --Actions: Transfers file based on input arguments
+    
     --Outputs: None
     '''
     sftp.put(localpath,remotepath)
@@ -166,6 +178,8 @@ def sendCompletebit(value):
     Sets the sendComplete flag on the server to 0 or 1 to indicate it's finished transfer files and the server can start to process them. 
     
     --Inputs: int 1 or 0 to set sendCompleteFlag tp
+    
+    --Actions: opens sendComplete file and changes flag
     
     --Outputs: None
     '''
@@ -179,6 +193,8 @@ def sendack(filehash):
     This is import so that transfers don't need to be repeated if either the client or server lose connection/power during a batch file transfer.
     
     --Inputs: Filehash as string
+    
+    --Actions: Sends message to server with hash and client ID
     
     --Outputs: None
     
@@ -209,9 +225,11 @@ def updateManifest():
     Each file gets blank placeholders for properties. 
     The flags didn't get used in the end but I'm leaving them in as they might be used in future updates. 
     
-    --Inputs:
+    --Inputs: None
     
-    --Outputs:
+    --Actions:None
+    
+    --Outputs: current client manifest as python dict
     '''
     manifest={}
     writetologs("Updating Client Manifest")
@@ -283,6 +301,9 @@ while True:
                     filename=transferManifest['transfer'][filehash]['path'][0]
             
                     if transferManifest['transfer'][filehash]['transferred']==False:
+                        '''
+                        If a file in the transferManifest is marked as trasnferred=False then its transfered to the staging folder, the file name is set to the filehash. 
+                        '''
                         writetologs("Transferring {}".format(filename))
                         sendfile(SHAREDIR+'/'+filename,'/home/{}/ftpsync/.client01Staging/{}'.format(SERVERUSER,filehash))
                         sendack(filehash)

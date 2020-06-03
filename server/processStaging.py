@@ -82,7 +82,14 @@ def confirmfolder(targetdirectory, basepath="storage"):
 def updateServerManifest(filepath='', filehash='',lastmodtime='',mode="Transfer"):
     '''
     This function updates the server manifest as files are processed.
-    A key point here is to store the clients last modified time in the server manifest and no the last modified time of the server copy, this ensures we always maintain the newest version. 
+    A key point here is to store the clients last modified time in the server manifest and not the last modified time of the server copy, this ensures we always maintain the newest version. 
+    
+    --Inputs: Filehash or Filepath, transfer mode
+    
+    --Actions: Reads latest serverManifest and updates it with the file hash of last file confirmed processed or file path of file archived.
+    
+    --Outputs: None
+
     '''
     with open('/home/{}/ftpsync/serverManifest.json'.format(serverUser),'r') as infile:
         serverManifest=json.load(infile)
@@ -106,6 +113,8 @@ def updateTransferManifest(filehash='',filepath='',mode="transfer"):
     This seems inefficient to open and save the json for every file. the idea is to write changes to disk as often as possible so work doesn't need to be repeated if the server loses power during processing.
     
     --Inputs: Filehash as String or FilePath as String, Mode for whether part of transfer of new files or archive of deleted files
+
+    --Actions:
     
     --Outputs: None
     '''
@@ -128,6 +137,8 @@ def  correctserverpath(fullpath):
     
     --Inputs: Filepath as string
 
+    --Actions:
+    
     --Outputs: path to storage location as string
     '''
     return 'storage'+fullpath
@@ -140,6 +151,8 @@ def gethash(filename):
 
     --Inputs: filepath as string
 
+    --Actions:
+    
     --Outputs: filehash as string
     '''
     sha256_hash = hashlib.sha256()
@@ -156,7 +169,9 @@ def archivefiles(filepath):
     Function to move files into their archive directory if marked for deletion, archive directory is create if not already existing
     
     --Inputs: Filepath as string
-
+    
+    --Actions:
+    
     --Outputs: None
     '''
     confirmfolder(filepath.split('/'),'archive')
@@ -170,7 +185,9 @@ def checkSC():
     Function to check if the client has finished sending files and marked the send complete flag as 1
 
     --Inputs: None
-
+    
+    --Actions:
+    
     --Outputs: Bool
     '''
     flagFile=open("/home/{}/ftpsync/.client01Control/sendComplete".format(serverUser), "r")

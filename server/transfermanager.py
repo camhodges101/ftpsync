@@ -20,7 +20,9 @@ def gethash(filename):
     basic function to take a filepath and return the SHA256 hash for the file
 
     --Inputs: filepath as string
-
+    
+    --Actions:
+    
     --Outputs: filehash as string
     '''
     sha256_hash = hashlib.sha256()
@@ -38,6 +40,8 @@ def markack(filehash):
     
     --Inputs: Filehash as string
 
+    --Actions: Loads latest transferManifest and marks filehash as Processed=True and resaves manifest. 
+    
     --Outputs: None
     '''
     if gethash('ftpsync/.client01Staging/'+filehash)==filehash:
