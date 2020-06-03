@@ -15,11 +15,11 @@ The sync process is based around manifest files. serverManifest.json and clientM
     7. All files have checksums (SHA256) to ensure they are transferred correctly without any missing data. 
     
 # features to add
-    1. Fix Known hosts check and config file 
+    1. Fix Known hosts check 
     2. File version tracking
     3. Change GUI updates from IP sockets to UDS.
     4. more efficient handling if files are moved to different directories (currrently they need to be retransferred instead of just moved on file server)
-    5. Replace terminal GUI with web GUI
+    5. Replace terminal GUI with Electron GUI
     6. multi client support (including mobile)
     7. Make pause function work
     8. Add list of unsynced files
