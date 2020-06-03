@@ -12,13 +12,23 @@ import random
 import socket
 recentfilesdata=[['Filename','Last Modified Time', 'Size']]
 
-latestserverattempt="Connected"
-hostname='192.168.0.113'
+latestserverattempt="Disconnected"
+hostname='0.0.0.0'
 transferMode='Idle'
-nbfilessent=54
-totalfiles=540
+nbfilessent=0
+totalfiles=0
 
 def getmessage(): 
+    '''
+    This function listens for state update messages from the client process, when received they are decoded and returned to the GUI process. 
+    
+    --Inputs: None
+    
+    --Actions: None
+    
+    --Outputs: Message data as a comma separated string.
+    '''
+
     UDP_IP = "127.0.0.1"
     UDP_PORT = 5025
 
@@ -38,12 +48,19 @@ class MyGrid(npyscreen.GridColTitles):
 
 class statusForm(npyscreen.Form):
 
-#    def while_waiting(self):
-        #npyscreen.notify_wait("Update")
-        #self.date_widget.value = datetime.now()
-        #self.display()
+
 
     def while_waiting(self):
+        '''
+        The while_waiting method allows for a refresh of the displayed values when a message is recieved from the client process. 
+        
+        The message is a string with comma separate values. 
+        
+        We first read the values off the message which is identified by starting with "0x10"
+        
+        We then update the values below. 
+        '''
+        
         data=getmessage()
         if data.split(",")[0]=="0x10":
             self.nbFilesTotransfer=data.split(",")[2]
@@ -63,31 +80,32 @@ class statusForm(npyscreen.Form):
         self.display()
 		
     def create(self):
+        '''
+        This creates the form outline showing the current state of the sftpsync process
+        
+        It also includes initial values which are later updated with data from the client process. 
+        '''
         self.nbFilesTotransfer=nbfilessent
         self.transferMode=transferMode #Idle, Indexing, Transferring
         self.hostName=hostname
         self.totalNumberofFiles=totalfiles
         self.connectionstate=latestserverattempt #Connected, Connecting, Disconnected, 
         self.recentfileslist=recentfilesdata
-        spaceing=35
-        self.time  = self.add(npyscreen.TitleText, name = str("System Time:"),value='',editable=False,begin_entry_at=spaceing)
-        self.filecount  = self.add(npyscreen.TitleText, name = str("Number of Files to Transfer:"),value='',editable=False,begin_entry_at=spaceing)
-        self.mode  = self.add(npyscreen.TitleText, name = str("Transfer Mode: "),value='',editable=False,begin_entry_at=spaceing)
-        self.host  = self.add(npyscreen.TitleText, name = str("Server Host Name: "),value='',editable=False,begin_entry_at=spaceing)
-        self.hoststatus  = self.add(npyscreen.TitleText, name = str("Connection Status: "),value='',editable=False,begin_entry_at=spaceing)
+        SPACING=35
+        self.time  = self.add(npyscreen.TitleText, name = str("System Time:"),value='',editable=False,begin_entry_at=SPACING)
+        self.filecount  = self.add(npyscreen.TitleText, name = str("Number of Files to Transfer:"),value='',editable=False,begin_entry_at=SPACING)
+        self.mode  = self.add(npyscreen.TitleText, name = str("Transfer Mode: "),value='',editable=False,begin_entry_at=SPACING)
+        self.host  = self.add(npyscreen.TitleText, name = str("Server Host Name: "),value='',editable=False,begin_entry_at=SPACING)
+        self.hoststatus  = self.add(npyscreen.TitleText, name = str("Connection Status: "),value='',editable=False,begin_entry_at=SPACING)
         self.transferpause= self.add(npyscreen.TitleSelectOne, max_height =4, value = [0,], name="Pause sFTP Sync",
 			values = ["Resume","Pause"], scroll_exit=True)
 
 	
         self.gd = self.add(MyGrid)
 
-				# Adding values to the Grid, this code just randomly
-				# fills a 2 x 4 grid with random PASS/FAIL strings.
         self.gd.values = recentfilesdata
 
         self.edit()
-#	def create(self):
-#        self.date_widget = self.add(npyscreen.FixedText,value=datetime.now(), editable=False)
     
 class sftpApp(npyscreen.NPSAppManaged):
 
