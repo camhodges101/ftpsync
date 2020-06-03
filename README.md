@@ -1,5 +1,5 @@
 # ftpsync
-![](GUI.png)
+![npyscreen based GUI](GUI.png)
 
 A simple process for creating Dropbox like sync between a Ubuntu client PC and a Raspberry Pi file server using sftp tools over a local network or VPN. 
 
