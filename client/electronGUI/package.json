@@ -1,0 +1,19 @@
+{
+  "name": "sftpSync",
+  "version": "1.0.0",
+  "description": "Cam's sFTP Sync Tool",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/camhodges101/ftpsync",
+  "keywords": [],
+  "author": "CAMHODGES",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^9.0.2"
+  },
+  "dependencies": {
+    "socketio": "^1.0.0"
+  }
+}

@@ -1,0 +1,60 @@
+h2{
+    color: whitesmoke;
+    border: 2px solid darkblue;
+    border-radius: 10px;
+    text-align:center;
+    font-style: bold;
+}
+h3{
+    color: whitesmoke;
+    text-align: left;
+    font-style: bold;
+}
+h4{
+    color: whitesmoke;
+    text-align: left;
+    font-style: bold;
+}
+
+.button {
+    background-color:  	#585858 ;
+    border: none;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    border: 2px solid darkblue;
+    border-radius: 10px;
+    width: 100%;
+    font-style: bold;
+  }
+
+  .button {
+    transition-duration: 0.4s;
+  }
+  
+  .button:hover {
+    background-color: #4CAF50; /* Green */
+    color: white;
+  }
+
+
+  .bottomright {
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+    font-size: 18px;
+  }
+
+  ul{
+      color: whitesmoke;
+      font-style: bold;
+      background-color: #585858;
+      width: 50%;
+  }
+.glyphicon{
+    color:#fff;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
+    <link rel='stylesheet' href='style.css'>    
+    <title>sFTP Sync</title>
+
+  </head>
+  <body style="-webkit-app-region: drag">
+  
+    <div class="background">
+      <h4>SmD sFTP Sync</h4>
+      <hr>
+      <div id="processState">
+        
+        <h2 id="connnect-state">Connection State: Disconnected</h2>
+        
+        <h2 id="Hostname">Server Host:  </h2>
+          
+        <h2 id="transferState">Transfer Mode</h2>
+        
+        <h2 id="transferfileCount">Waiting to start tranfer</h2>
+        
+      </div>
+        <button style="-webkit-app-region: no-drag" class="button" id="PauseButton">Pause Sync</button>
+      <div>
+        <h3>Unsynced Files</h3>
+        <hr color="#00008B">
+        <ul id="Unsyncedfiles"></ol>
+      </div>
+      <div class = "bottomright"><img src='./graphics/backgroundGraphic2.png',width="150" height="160"></div>
+    </div>    
+    
+    <script>
+      require('./stateHandler.js');
+    </script>
+  </body>
+</html>
