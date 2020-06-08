@@ -1,9 +1,11 @@
 # ftpsync
 ![npyscreen based GUI](GUI.png)
-
+![Electron App GUI](ElectronGUI.png)
 A simple process for creating Dropbox like sync between a Ubuntu client PC and a Raspberry Pi file server using sftp tools over a local network or VPN. 
 
 The sync process is based around manifest files. serverManifest.json and clientManifest are python dicts containing files and file properties on the file server and client machines. These are compared to find files that need to be synced. Based on this a transferManifest.json file is created, this contains a python dict of files that need to be transferred (dict keys are the SHA256 hash of each file) and a dict of files that need to be archived. The client machine iterates through this dict and uses sftp to transfer the files necessary.
+
+Includes a 1980s aesthetic Terminal GUI using npyscreens and a more modern replacement based on the Electron framework.
 
 # Features that work
     1. Automatically syncs new files to file server to mirror client file structure
