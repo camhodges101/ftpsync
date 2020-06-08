@@ -17,13 +17,13 @@ Includes a 1980s aesthetic Terminal GUI using npyscreens and a more modern repla
     5. client logging for troubleshooting
     6. Efficient transfer of duplicate files, duplicates are identified by SHA256 hash, duplicate files are only transferred once and then copied on file server
     7. All files have checksums (SHA256) to ensure they are transferred correctly without any missing data. 
+    8. Terminal based GUI and Javascript based replacement.
     
 # features to add
     1. Fix Known hosts check 
     2. File version tracking
     3. Change GUI updates from IP sockets to UDS.
     4. more efficient handling if files are moved to different directories (currrently they need to be retransferred instead of just moved on file server)
-    5. Replace terminal GUI with Electron GUI
-    6. multi client support (including mobile)
-    7. Make pause function work
-    8. Add list of unsynced files
+    5. multi client support (including mobile)
+    6. Make pause function work
+    7. Add list of unsynced files
