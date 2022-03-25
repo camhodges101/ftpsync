@@ -11,7 +11,7 @@
   "author": "CAMHODGES",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^9.0.2"
+    "electron": "^13.6.6"
   },
   "dependencies": {
     "socketio": "^1.0.0"
